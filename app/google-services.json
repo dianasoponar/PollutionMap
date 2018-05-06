@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "140860881700",
+    "firebase_url": "https://pollutionmap-50699.firebaseio.com",
+    "project_id": "pollutionmap-50699",
+    "storage_bucket": "pollutionmap-50699.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:140860881700:android:69aaf4670d27a3bc",
+        "android_client_info": {
+          "package_name": "com.example.dianasoponar.pollutionmap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "140860881700-45e75jqsvsulc2vmthe4fgub8i0ffc29.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.dianasoponar.pollutionmap",
+            "certificate_hash": "80eae318199d5ed738c6d5b1a79c9c77f6b164a4"
+          }
+        },
+        {
+          "client_id": "140860881700-20j8vfn3bk99m9p0qduh0ccj4mckdqfh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwHMIkY_tFrAvMxM5E8ej6_jnj4KoySK0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "140860881700-20j8vfn3bk99m9p0qduh0ccj4mckdqfh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
