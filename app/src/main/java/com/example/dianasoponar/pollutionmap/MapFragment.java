@@ -1,3 +1,4 @@
+/*
 package com.example.dianasoponar.pollutionmap;
 
 import android.annotation.SuppressLint;
@@ -43,9 +44,9 @@ public class MapFragment extends Fragment implements GoogleMap.OnInfoWindowClick
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_map, container, false);
+        //View view = inflater.inflate(R.layout.fragment_map, container, false);
 
-        mMapView = (MapView) view.findViewById(R.id.mapView);
+        //mMapView = (MapView) view.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
 
         mMapView.onResume(); // needed to get the map to display immediately
@@ -95,7 +96,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnInfoWindowClick
         ORANGE -> High: 901 - 1200 particles/0.01 cubic feet (Fair)
         RED -> Very High: > 1200 particles/0.01 cubic feet (Poor)
          */
-        Bitmap bm = null;
+        /*Bitmap bm = null;
         if(Integer.parseInt(text) <= 300){
             bm = BitmapFactory.decodeResource(this.getActivity().getResources(), R.drawable.ic_marker_icon_green).copy(Bitmap.Config.ARGB_8888, true);
         }
@@ -183,3 +184,4 @@ public class MapFragment extends Fragment implements GoogleMap.OnInfoWindowClick
                 Toast.LENGTH_SHORT).show();
     }
 }
+*/

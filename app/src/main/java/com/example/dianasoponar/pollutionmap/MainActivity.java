@@ -33,36 +33,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId())
         {
-            case R.id.bottom_nav_home:{
-                Log.d(TAG, "onNavigationItemSelected: HomeFragment.");
-                HomeFragment homeFragment = new HomeFragment();
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.main_content_frame, homeFragment, getString(R.string.tag_fragment_home));
-                transaction.addToBackStack(getString(R.string.tag_fragment_home));
-                transaction.commit();
-                item.setChecked(true);
-                break;
-            }
-            case R.id.bottom_nav_device:{
-                Log.d(TAG, "onNavigationItemSelected: DeviceFragment.");
-                DeviceFragment deviceFragment = new DeviceFragment();
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.main_content_frame, deviceFragment, getString(R.string.tag_fragment_device));
-                transaction.addToBackStack(getString(R.string.tag_fragment_device));
-                transaction.commit();
-                item.setChecked(true);
-                break;
-            }
-            case R.id.bottom_nav_map:{
-                Log.d(TAG, "onNavigationItemSelected: MapFragment.");
-                MapFragment mapFragment = new MapFragment();
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.main_content_frame, mapFragment, getString(R.string.tag_fragment_map));
-                transaction.addToBackStack(getString(R.string.tag_fragment_map));
-                transaction.commit();
-                item.setChecked(true);
-                break;
-            }
+
         }
         return false;
     }
@@ -71,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mBottomNavigationViewEx = findViewById(R.id.bottom_nav_view);
+        //mBottomNavigationViewEx = findViewById(R.id.bottom_nav_view);
         mBottomNavigationViewEx.getMenu().getItem(1).setChecked(true);
 
         mBottomNavigationViewEx.setOnNavigationItemSelectedListener(this);
@@ -86,22 +57,11 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         mDatabase.keepSynced(true);
 
         initBottomNavigationView();
-        init();
         getLocationPermission();
     }
 
     private void initBottomNavigationView(){
         Log.d(TAG, "initBottomNavigationView: initializing the bottom navigation view.");
-    }
-
-    private void init(){
-        HomeFragment homeFragment = new HomeFragment();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.main_content_frame, homeFragment, getString(R.string.tag_fragment_home));
-        transaction.addToBackStack(getString(R.string.tag_fragment_home));
-        transaction.commit();
-
-        mBottomNavigationViewEx.getMenu().getItem(1).setChecked(true);
     }
 
     private void getLocationPermission() {

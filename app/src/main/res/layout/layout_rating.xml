@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/rate_me"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rate the Quality of the Air"
+        android:gravity="center"
+        android:textColor="#fa116b6c"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
+
+    <RatingBar
+        android:layout_below="@+id/rate_me"
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:stepSize="0.1"
+        android:scaleX="0.7"
+        android:scaleY="0.7"
+        android:transformPivotX="0dp"
+        android:transformPivotY="0dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin" />
+
+    <Button
+        android:layout_below="@+id/ratingBar"
+        android:id="@+id/submit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send"
+        android:onClick="rateMe"
+        android:textColor="#fa116b6c"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+
+</RelativeLayout>

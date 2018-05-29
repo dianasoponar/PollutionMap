@@ -1,4 +1,4 @@
-package com.example.dianasoponar.pollutionmap;
+package com.example.dianasoponar.pollutionmap.Utils;
 
 import android.location.Address;
 

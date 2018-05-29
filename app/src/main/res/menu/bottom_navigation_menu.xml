@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-
-    <item
-        android:id="@+id/bottom_nav_device"
-        android:icon="@drawable/ic_menu_device"
-        android:layout_centerVertical="true"
-        android:title="">
-    </item>
-
     <item
         android:id="@+id/bottom_nav_home"
         android:icon="@drawable/ic_menu_tab"
@@ -19,6 +11,14 @@
     <item
         android:id="@+id/bottom_nav_map"
         android:icon="@drawable/ic_menu_map"
+        android:layout_centerVertical="true"
+        android:title="">
+    </item>
+
+
+    <item
+        android:id="@+id/bottom_nav_device"
+        android:icon="@drawable/ic_menu_device"
         android:layout_centerVertical="true"
         android:title="">
     </item>

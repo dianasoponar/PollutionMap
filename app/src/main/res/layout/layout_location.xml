@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:background="@drawable/layout_bg">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Baia Mare"
+            android:id="@+id/area"
+            android:textColor="#fa116b6c"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:typeface="sans"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="Pollution Level: 253"
+            android:id="@+id/pollutionLevel"
+            android:textColor="#fa116b6c"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:typeface="sans"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="Health Recommendations"
+            android:id="@+id/healthRecommendations"
+            android:textColor="#fa116b6c"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:typeface="sans"/>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="45dp"
+            android:gravity="end"
+            android:text="12:53 today"
+            android:id="@+id/timestamp"
+            android:textColor="#fa116b6c"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:typeface="sans"/>
+
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>

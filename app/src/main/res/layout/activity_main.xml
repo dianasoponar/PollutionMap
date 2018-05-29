@@ -7,6 +7,5 @@
     tools:context="com.example.dianasoponar.pollutionmap.MainActivity"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_main_content"></include>
 
 </RelativeLayout>

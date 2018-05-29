@@ -103,7 +103,7 @@ public class MapsActivity extends SupportMapFragment  implements OnMapReadyCallb
         //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
-        // Turn on the My Location layer and the related control on the map.
+        // Turn on the My LocationPoint layer and the related control on the map.
 
         startLocationUpdates();
 
@@ -227,7 +227,7 @@ public class MapsActivity extends SupportMapFragment  implements OnMapReadyCallb
 
     public void onLocationChanged(Location location) {
         // New location has now been determined
-        String msg = "Updated Location: " +
+        String msg = "Updated LocationPoint: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
         Toast.makeText(this.getContext(), msg, Toast.LENGTH_SHORT).show();
