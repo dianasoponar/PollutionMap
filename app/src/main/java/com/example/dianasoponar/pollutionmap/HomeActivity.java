@@ -1,5 +1,6 @@
 package com.example.dianasoponar.pollutionmap;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -38,7 +39,13 @@ import com.google.firebase.database.ValueEventListener;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -94,8 +101,15 @@ public class HomeActivity extends AppCompatActivity {
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        final TextView areaTextView = (TextView)findViewById(R.id.areaTextView);
+        getLocation();
 
+        setupBottomNavigationView();
+
+
+    }
+
+    public void getLocation(){
+        final TextView areaTextView = (TextView)findViewById(R.id.areaTextView);
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -127,15 +141,13 @@ public class HomeActivity extends AppCompatActivity {
                                     areaTextView.setTextSize(30);
                                     areaTextView.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
                                     areaTextView.setTextColor(Color.BLACK);
+
+                                    setupFirebase();
                                 }
                             });
                         }
                     }
                 });
-
-        setupBottomNavigationView();
-        setupFirebase();
-
     }
 
     public void getCityName(final Location location, final OnGeocoderFinishedListener listener) {
@@ -184,7 +196,7 @@ public class HomeActivity extends AppCompatActivity {
                     LocationPoint location = new LocationPoint();
 
                     location.setCoordinates(new Coordinates((double)childSnapshot.child("coordinates").child("latitude").getValue(), (double)childSnapshot.child("coordinates").child("longitude").getValue()));
-                    if (Math.abs(location.getCoordinates().getLatitude()-46.759418)<=0.008 && Math.abs(location.getCoordinates().getLongitude()-23.5614964)<=0.008)
+                    if (Math.abs(location.getCoordinates().getLatitude()-currentAddress.getLatitude())<=0.008 && Math.abs(location.getCoordinates().getLongitude()-currentAddress.getLongitude())<=0.008)
                     {
                         location.setArea(childSnapshot.child("area").getValue().toString());
                         location.setPollutionLevel(Integer.valueOf(childSnapshot.child("pollutionLevel").getValue().toString()));
@@ -215,7 +227,25 @@ public class HomeActivity extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("ratings");
 
-        myRef.setValue("Hello, World!");
+        Date date = new Date();   // given date
+        Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
+        calendar.setTime(date);   // assigns calendar to given date
+
+        DatabaseReference newChildRef = myRef.push();
+
+        newChildRef.child("area").setValue(currentAddress.getThoroughfare() + " "
+                + currentAddress.getSubThoroughfare() + ", "
+                + currentAddress.getLocality() + ", "
+                + currentAddress.getCountryName());
+        newChildRef.child("coordinates").child("latitude").setValue(currentAddress.getLatitude());
+        newChildRef.child("coordinates").child("longitude").setValue(currentAddress.getLongitude());
+        newChildRef.child("dateTime").child("day").setValue(calendar.get(Calendar.DAY_OF_MONTH));
+        newChildRef.child("dateTime").child("hour").setValue(calendar.get(Calendar.HOUR_OF_DAY));
+        newChildRef.child("dateTime").child("minute").setValue(calendar.get(Calendar.MINUTE));
+        newChildRef.child("dateTime").child("month").setValue(calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()));
+        newChildRef.child("dateTime").child("year").setValue(calendar.get(Calendar.YEAR));
+        newChildRef.child("rating").setValue(ratingBar.getRating());
+
         //Toast.makeText(getApplicationContext(), String.valueOf(ratingBar.getRating()), Toast.LENGTH_LONG).show();
     }
 

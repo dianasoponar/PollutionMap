@@ -15,7 +15,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.example.dianasoponar.pollutionmap.Models.LocationPoint;
 import com.example.dianasoponar.pollutionmap.Utils.BottomNavigationViewHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,6 +27,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
@@ -33,6 +36,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
+
+import java.util.Date;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -120,13 +125,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     }
 
     public BitmapDrawable writeOnDrawable(String text){
-
-        /*
-        GREEN -> Very Low: 0 - 300 particles/0.01 cubic feet (Excellent)
-        PALE GREEN -> Low: 301 - 600 particles/0.01 cubic feet (Good)
-        YELLOW -> Medium: 601 - 900 particles/0.01 cubic feet (Good -> Fair)
-        ORANGE -> High: 901 - 1200 particles/0.01 cubic feet (Fair)
-        RED -> Very High: > 1200 particles/0.01 cubic feet (Poor)
+        /**
+         * GREEN -> Very Low: 0 - 300 particles/0.01 cubic feet (Excellent)
+         * PALE GREEN -> Low: 301 - 600 particles/0.01 cubic feet (Good)
+         * YELLOW -> Medium: 601 - 900 particles/0.01 cubic feet (Good -> Fair)
+         * ORANGE -> High: 901 - 1200 particles/0.01 cubic feet (Fair)
+         * RED -> Very High: > 1200 particles/0.01 cubic feet (Poor)
          */
         Bitmap bm = null;
         if(Integer.parseInt(text) <= 300){
@@ -187,18 +191,29 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for (DataSnapshot childSnapshot: dataSnapshot.getChildren()) {
-                    mMap.addMarker(new MarkerOptions()
-                            .position(new LatLng((double)childSnapshot.child("coordinates").child("latitude").getValue(),
+
+                    MarkerOptions markerOptions = new MarkerOptions();
+
+                    markerOptions.position(new LatLng((double)childSnapshot.child("coordinates").child("latitude").getValue(),
                                     (double)childSnapshot.child("coordinates").child("longitude").getValue()))
                             .title((String)childSnapshot.child("area").getValue())
-                            .icon(BitmapDescriptorFactory.fromBitmap(writeOnDrawable(childSnapshot.child("pollutionLevel").getValue().toString()).getBitmap())));
+                            .icon(BitmapDescriptorFactory.fromBitmap(writeOnDrawable(childSnapshot.child("pollutionLevel").getValue().toString()).getBitmap()));
+
+                    LocationPoint info = new LocationPoint();
+                    info.setArea("aaaa");
+                    info.setPollutionLevel(425);
+
+                    CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(MapActivity.this);
+                    mMap.setInfoWindowAdapter(customInfoWindow);
+
+                    Marker m = mMap.addMarker(markerOptions);
+                    m.setTag(info);
                 }
-                //Log.d(TAG, "Value is: " + values);
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                // Failed to read value
+                Toast.makeText(getApplicationContext(), "Failed to read values.", Toast.LENGTH_LONG).show();                // Failed to read value
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
