@@ -1,4 +1,4 @@
-package com.example.dianasoponar.pollutionmap;
+package com.example.dianasoponar.pollutionmap.no_use;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -6,13 +6,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 
-import com.google.firebase.database.DatabaseReference;
+import com.example.dianasoponar.pollutionmap.R;
 import com.google.firebase.database.FirebaseDatabase;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
@@ -20,10 +19,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private static final java.lang.String TAG = "MainActivity";
 
     private final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 200;
-
-    //add Firebase Database stuff
-    public FirebaseDatabase mFirebaseDatabase;
-    public static DatabaseReference mDatabase;
 
     //widgets
     private BottomNavigationViewEx mBottomNavigationViewEx;
@@ -49,12 +44,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         //enable disk persistence
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mDatabase = mFirebaseDatabase.getReference();
-
-        //The Firebase Realtime Database synchronizes and stores a local copy of the data for active listeners
-        mDatabase.keepSynced(true);
 
         initBottomNavigationView();
         getLocationPermission();

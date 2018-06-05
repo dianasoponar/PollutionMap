@@ -19,7 +19,7 @@
     </string>
 
     <string name="tag_fragment_home">Cluj-Napoca, Romania</string>
-    <string name="tag_fragment_device">Hello Device fragment</string>
+    <string name="tag_fragment_device">No data from sensor available!</string>
     <string name="tag_fragment_map">Hello Map fragment</string>
     <string name="title_activity_map">Map</string>
 </resources>

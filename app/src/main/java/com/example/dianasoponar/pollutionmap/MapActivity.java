@@ -21,7 +21,6 @@ import com.example.dianasoponar.pollutionmap.Models.LocationPoint;
 import com.example.dianasoponar.pollutionmap.Utils.BottomNavigationViewHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -29,15 +28,12 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
-import java.util.Date;
+import static com.example.dianasoponar.pollutionmap.Utils.Globals.*;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -46,10 +42,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private static final int ACTIVITY_NUM = 1;
 
     private GoogleMap mMap;
-
-    //add Firebase Database stuff
-    public FirebaseDatabase mFirebaseDatabase;
-    public static DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,21 +52,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        //enable disk persistence
-        if (FirebaseApp.getApps(MapActivity.this).isEmpty()) {
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-        }
-
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mDatabase = mFirebaseDatabase.getReference("locations");
-
-        //The Firebase Realtime Database synchronizes and stores a local copy of the data for active listeners
-        mDatabase.keepSynced(true);
-
         //mMapView.onResume(); // needed to get the map to display immediately
 
         setupBottomNavigationView();
-
         getData();
     }
 
@@ -133,19 +113,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
          * RED -> Very High: > 1200 particles/0.01 cubic feet (Poor)
          */
         Bitmap bm = null;
-        if(Integer.parseInt(text) <= 300){
+        if(Double.parseDouble(text) <= 300){
             bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_icon_green).copy(Bitmap.Config.ARGB_8888, true);
         }
-        else if(Integer.parseInt(text) > 300 && Integer.parseInt(text) <= 600) {
+        else if(Double.parseDouble(text) > 300 && Integer.parseInt(text) <= 600) {
             bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_icon_palegreen).copy(Bitmap.Config.ARGB_8888, true);
         }
-        else if(Integer.parseInt(text) > 600 && Integer.parseInt(text) <= 900) {
+        else if(Double.parseDouble(text) > 600 && Integer.parseInt(text) <= 900) {
             bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_icon_yellow).copy(Bitmap.Config.ARGB_8888, true);
         }
-        else if(Integer.parseInt(text) > 900 && Integer.parseInt(text) <= 1200) {
+        else if(Double.parseDouble(text) > 900 && Integer.parseInt(text) <= 1200) {
             bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_icon_orange).copy(Bitmap.Config.ARGB_8888, true);
         }
-        else if(Integer.parseInt(text) > 1200) {
+        else if(Double.parseDouble(text) > 1200) {
             bm = BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_icon_red).copy(Bitmap.Config.ARGB_8888, true);
         }
 
@@ -185,7 +165,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private void getData(){
 
         // Read from the database
-        mDatabase.addValueEventListener(new ValueEventListener() {
+        mDatabaseLocations.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -201,7 +181,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
                     LocationPoint info = new LocationPoint();
                     info.setArea("aaaa");
-                    info.setPollutionLevel(425);
+                    info.setPollutionLevel(Double.parseDouble("425"));
 
                     CustomInfoWindowGoogleMap customInfoWindow = new CustomInfoWindowGoogleMap(MapActivity.this);
                     mMap.setInfoWindowAdapter(customInfoWindow);

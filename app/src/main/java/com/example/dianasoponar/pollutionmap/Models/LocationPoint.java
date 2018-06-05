@@ -1,12 +1,14 @@
 package com.example.dianasoponar.pollutionmap.Models;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class LocationPoint {
     private String area;
-    private Coordinates coordinates;
+    private LatLng coordinates;
     private String date;
-    private Integer pollutionLevel;
+    private Double pollutionLevel;
 
-    public LocationPoint(String area, Coordinates coordinates, String date, Integer pollutionLevel){
+    public LocationPoint(String area, LatLng coordinates, String date, Double pollutionLevel){
         this.area=area;
         this.coordinates=coordinates;
         this.date=date;
@@ -21,7 +23,7 @@ public class LocationPoint {
         return area;
     }
 
-    public Coordinates getCoordinates() {
+    public LatLng getCoordinates() {
         return coordinates;
     }
 
@@ -33,7 +35,7 @@ public class LocationPoint {
         return "";
     }
 
-    public Integer getPollutionLevel() {
+    public Double getPollutionLevel() {
         return pollutionLevel;
     }
 
@@ -41,7 +43,7 @@ public class LocationPoint {
         this.area = area;
     }
 
-    public void setCoordinates(Coordinates coordinates) {
+    public void setCoordinates(LatLng coordinates) {
         this.coordinates = coordinates;
     }
 
@@ -49,7 +51,7 @@ public class LocationPoint {
         this.date = date;
     }
 
-    public void setPollutionLevel(Integer pollutionLevel) {
+    public void setPollutionLevel(Double pollutionLevel) {
         this.pollutionLevel = pollutionLevel;
     }
 }

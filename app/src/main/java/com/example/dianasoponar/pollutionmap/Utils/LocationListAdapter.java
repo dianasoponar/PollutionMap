@@ -65,7 +65,7 @@ public class LocationListAdapter extends ArrayAdapter<LocationPoint> {
         holder.area.setText(getItem(position).getArea());
 
         //set the area
-        holder.pollutionLevel.setText(getItem(position).getPollutionLevel().toString());
+        holder.pollutionLevel.setText(Double.valueOf(getItem(position).getPollutionLevel()).toString());
 
         //TODO set healthRecommendations
         holder.healthRecommendations.setText("GOOD");

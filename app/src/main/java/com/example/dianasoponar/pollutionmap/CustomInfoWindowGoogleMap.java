@@ -35,7 +35,7 @@ public class CustomInfoWindowGoogleMap implements GoogleMap.InfoWindowAdapter {
 
         LocationPoint infoWindowData = (LocationPoint) marker.getTag();
 
-        pollutionLevel.setText(infoWindowData.getPollutionLevel().toString());
+        pollutionLevel.setText(Double.valueOf(infoWindowData.getPollutionLevel()).toString());
         index.setText("LOW");
         recommendations.setText("Stay inside!");
         area.setText(marker.getTitle());

@@ -15,7 +15,7 @@
         android:textColor="#fa116b6c"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:typeface="sans"
+        android:typeface="monospace"
         android:layout_marginStart="@dimen/activity_horizontal_margin"/>
 
     <RatingBar
@@ -32,9 +32,22 @@
         android:transformPivotY="0dp"
         android:layout_marginStart="@dimen/activity_horizontal_margin"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/messageRating"
+        android:visibility="invisible"
+        android:textColor="#fa116b6c"
+        android:layout_marginTop="20dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:typeface="monospace"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"/>
+        />
+
     <Button
         android:layout_below="@+id/ratingBar"
-        android:id="@+id/submit"
+        android:id="@+id/submitRating"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send"

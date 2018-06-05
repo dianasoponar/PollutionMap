@@ -1,6 +1,5 @@
 package com.example.dianasoponar.pollutionmap;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -16,21 +15,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.dianasoponar.pollutionmap.Models.Coordinates;
 import com.example.dianasoponar.pollutionmap.Models.LocationPoint;
 import com.example.dianasoponar.pollutionmap.Utils.BottomNavigationViewHelper;
 import com.example.dianasoponar.pollutionmap.Utils.LocationListAdapter;
 import com.example.dianasoponar.pollutionmap.Utils.OnGeocoderFinishedListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,73 +37,56 @@ import com.google.firebase.database.ValueEventListener;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+
+import static com.example.dianasoponar.pollutionmap.Utils.Globals.*;
 
 public class HomeActivity extends AppCompatActivity {
 
     private static final String TAG = "HomeFragment";
 
     private FusedLocationProviderClient mFusedLocationClient;
-    private static final int ACTIVITY_NUM = 0;
 
     //Variables
     private List<LocationPoint> mLocations;
-    static private Address currentAddress;
+    private static final int ACTIVITY_NUM = 0;
 
     //Widgets
-    private Context mContext;
+    private static Context mContext;
     private ListView mListView;
-    public RatingBar ratingBar;
-
-    //Firebase
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mDatabase;
+    private RatingBar ratingBar;
+    private Button submitRating;
+    private TextView messageRating;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        mListView = (ListView)findViewById(R.id.listView);
-        mLocations = new ArrayList<>();
-
-        // Initialize RatingBar
-        ratingBar = (RatingBar) findViewById(R.id.ratingBar);
 
         mContext=HomeActivity.this;
 
-        //enable disk persistence
-        if (FirebaseApp.getApps(HomeActivity.this).isEmpty()) {
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-        }
-
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mDatabase = mFirebaseDatabase.getReference("locations");
-
-        //The Firebase Realtime Database synchronizes and stores a local copy of the data for active listeners
-        mDatabase.keepSynced(true);
-
+        mListView = (ListView)findViewById(R.id.listView);
+        mLocations = new ArrayList<>();
+        // Initialize RatingBar
+        ratingBar = (RatingBar) findViewById(R.id.ratingBar);
+        submitRating = (Button) findViewById(R.id.submitRating);
+        messageRating = (TextView) findViewById(R.id.messageRating);
         //setup widgets
         LocationListAdapter adapter = new LocationListAdapter(mContext,
                 R.layout.layout_location, mLocations);
         mListView.setAdapter(adapter);
 
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        getLocation();
-
         setupBottomNavigationView();
-
-
+        setupFirebase();
+        getLocation();
     }
 
     public void getLocation(){
@@ -142,7 +123,7 @@ public class HomeActivity extends AppCompatActivity {
                                     areaTextView.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
                                     areaTextView.setTextColor(Color.BLACK);
 
-                                    setupFirebase();
+                                    setLocationData();
                                 }
                             });
                         }
@@ -150,11 +131,11 @@ public class HomeActivity extends AppCompatActivity {
                 });
     }
 
-    public void getCityName(final Location location, final OnGeocoderFinishedListener listener) {
+    public static void getCityName(final Location location, final OnGeocoderFinishedListener listener) {
         new AsyncTask<Void, Integer, List<Address>>() {
             @Override
             protected List<Address> doInBackground(Void... arg0) {
-                Geocoder coder = new Geocoder(HomeActivity.this, Locale.ENGLISH);
+                Geocoder coder = new Geocoder(mContext, Locale.ENGLISH);
                 List<Address> results = null;
                 try {
                     results = coder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
@@ -186,8 +167,8 @@ public class HomeActivity extends AppCompatActivity {
         menuItem.setChecked(true);
     }
 
-    public void setupFirebase(){
-        mDatabase.addValueEventListener(new ValueEventListener() {
+    public void setLocationData(){
+        mDatabaseLocations.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
@@ -195,11 +176,12 @@ public class HomeActivity extends AppCompatActivity {
                 for (DataSnapshot childSnapshot: dataSnapshot.getChildren()) {
                     LocationPoint location = new LocationPoint();
 
-                    location.setCoordinates(new Coordinates((double)childSnapshot.child("coordinates").child("latitude").getValue(), (double)childSnapshot.child("coordinates").child("longitude").getValue()));
-                    if (Math.abs(location.getCoordinates().getLatitude()-currentAddress.getLatitude())<=0.008 && Math.abs(location.getCoordinates().getLongitude()-currentAddress.getLongitude())<=0.008)
+                    location.setCoordinates(new LatLng((double) childSnapshot.child("coordinates").child("latitude").getValue(),
+                            (double) childSnapshot.child("coordinates").child("longitude").getValue()));
+                    if (Math.abs(location.getCoordinates().latitude-currentAddress.getLatitude())<=0.008 && Math.abs(location.getCoordinates().longitude-currentAddress.getLongitude())<=0.008)
                     {
                         location.setArea(childSnapshot.child("area").getValue().toString());
-                        location.setPollutionLevel(Integer.valueOf(childSnapshot.child("pollutionLevel").getValue().toString()));
+                        location.setPollutionLevel(Double.valueOf(childSnapshot.child("pollutionLevel").getValue().toString()));
                         location.setDate(childSnapshot.child("dateTime").getValue().toString());
 
                         mLocations.add(location);
@@ -223,15 +205,11 @@ public class HomeActivity extends AppCompatActivity {
      * @param view
      */
     public void rateMe(View view){
-
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("ratings");
-
         Date date = new Date();   // given date
         Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
         calendar.setTime(date);   // assigns calendar to given date
 
-        DatabaseReference newChildRef = myRef.push();
+        DatabaseReference newChildRef = mDatabaseRatings.push();
 
         newChildRef.child("area").setValue(currentAddress.getThoroughfare() + " "
                 + currentAddress.getSubThoroughfare() + ", "
@@ -246,7 +224,27 @@ public class HomeActivity extends AppCompatActivity {
         newChildRef.child("dateTime").child("year").setValue(calendar.get(Calendar.YEAR));
         newChildRef.child("rating").setValue(ratingBar.getRating());
 
+        ratingBar.setVisibility(View.INVISIBLE);
+        submitRating.setVisibility(View.INVISIBLE);
+        messageRating.setVisibility(View.VISIBLE);
+        messageRating.setText("Your rating is: "+ratingBar.getRating());
+
         //Toast.makeText(getApplicationContext(), String.valueOf(ratingBar.getRating()), Toast.LENGTH_LONG).show();
+    }
+
+    public void setupFirebase(){
+        //enable disk persistence
+        if (FirebaseApp.getApps(HomeActivity.this).isEmpty()) {
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        }
+
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mDatabaseLocations = mFirebaseDatabase.getReference("locations");
+        mDatabaseRatings = mFirebaseDatabase.getReference("ratings");
+
+        //The Firebase Realtime Database synchronizes and stores a local copy of the data for active listeners
+        mDatabaseLocations.keepSynced(true);
+        mDatabaseRatings.keepSynced(true);
     }
 
 }
