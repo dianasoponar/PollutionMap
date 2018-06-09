@@ -4,21 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".HomeActivity">
+    tools:context=".HomeActivity"
+    android:id="@+id/activity_home">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/areaTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="130dp"
+            android:layout_marginTop="70dp"
             android:gravity="center"
             android:layout_centerHorizontal="true"
             android:layout_alignParentTop="true"
@@ -30,10 +32,16 @@
 
         <include layout="@layout/layout_rating"
             android:layout_below="@+id/areaTextView"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginTop="25dp"
             android:id="@+id/rating"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Analysis"
+            android:onClick="showAnalysis"/>
 
         <ListView
             android:id="@+id/listView"
@@ -42,12 +50,13 @@
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/rating"
             android:layout_marginBottom="60dp"
+            android:layout_marginTop="20dp"
             android:fadingEdge="none"
             android:divider="@null"
             android:dividerHeight="0dp"/>
 
 
-    </RelativeLayout>
+    </LinearLayout>
 
     <include layout="@layout/layout_bottom_navigation_view" />
 </android.support.design.widget.CoordinatorLayout>

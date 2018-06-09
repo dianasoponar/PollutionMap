@@ -16,6 +16,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
@@ -34,6 +38,8 @@ dependencies {
     implementation 'com.facebook.android:facebook-login:[4,5)'
     implementation 'com.google.firebase:firebase-auth:11.8.0'
     implementation 'com.macroyau:thingspeakandroid:0.2.2'
+    implementation 'com.google.maps.android:android-maps-utils:0.5+'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
 
 
     //recyclerview

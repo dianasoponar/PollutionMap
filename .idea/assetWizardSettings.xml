@@ -23,7 +23,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/maps/ic_place_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/toggle/ic_star_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -33,11 +33,10 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="assetType" value="IMAGE" />
-                                      <entry key="imageAsset" value="E:\Faculty\Licenta\marker.png" />
-                                      <entry key="outputName" value="ic_marker_icon_red" />
+                                      <entry key="imageAsset" value="E:\Faculty\Licenta\marker-star.png" />
+                                      <entry key="outputName" value="ic_marker_star_icon_yellow" />
                                       <entry key="theme" value="CUSTOM" />
-                                      <entry key="themeColor" value="ff3100" />
+                                      <entry key="themeColor" value="ffed00" />
                                     </map>
                                   </option>
                                 </PersistentState>

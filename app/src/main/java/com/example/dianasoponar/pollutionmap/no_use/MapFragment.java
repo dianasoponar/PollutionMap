@@ -128,7 +128,7 @@ public class MapFragment extends Fragment implements GoogleMap.OnInfoWindowClick
         return new BitmapDrawable(this.getActivity().getResources(),bm);
     }
 
-    private void getData(){
+    private void getDate(){
 
         // Read from the database
         mDatabase.addValueEventListener(new ValueEventListener() {
