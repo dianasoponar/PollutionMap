@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -18,10 +19,14 @@ import com.example.dianasoponar.pollutionmap.Models.PollutionLevel;
 import com.example.dianasoponar.pollutionmap.Models.SensorPoint;
 import com.example.dianasoponar.pollutionmap.R;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
@@ -56,6 +61,7 @@ public class LocationListAdapter extends ArrayAdapter<SensorPoint> {
 
     private static class ViewHolder{
         TextView area, pollutionLevel, healthRecommendations, timestamp;
+        ImageView alert;
     }
 
     @NonNull
@@ -72,6 +78,7 @@ public class LocationListAdapter extends ArrayAdapter<SensorPoint> {
             holder.pollutionLevel = (TextView) convertView.findViewById(R.id.pollutionLevel);
             holder.healthRecommendations = (TextView) convertView.findViewById(R.id.healthRecommendations);
             holder.timestamp = (TextView) convertView.findViewById(R.id.timestamp);
+            holder.alert = (ImageView) convertView.findViewById(R.id.imageAlertAdapter);
 
             convertView.setTag(holder);
         }else{
@@ -95,29 +102,24 @@ public class LocationListAdapter extends ArrayAdapter<SensorPoint> {
 
         holder.pollutionLevel.setText(Double.valueOf(latestLevel.getLevel()).toString());
         if(Double.valueOf(holder.pollutionLevel.getText().toString()) <= 300){
-            holder.pollutionLevel.setTextColor(ContextCompat.getColor(mContext, R.color.colorGreen));
             holder.healthRecommendations.setText("Enjoy your usual outdoor activities.");
-            holder.healthRecommendations.setTextColor(ContextCompat.getColor(mContext,R.color.colorGreen));
+            holder.alert.setImageResource(R.drawable.ic_alert_icon_green);
         }
         else if(Double.valueOf(holder.pollutionLevel.getText().toString()) > 300 && Double.valueOf(holder.pollutionLevel.getText().toString()) <= 600) {
-            holder.pollutionLevel.setTextColor(ContextCompat.getColor(mContext,R.color.colorPaleGren));
             holder.healthRecommendations.setText("Air quality is acceptable.");
-            holder.healthRecommendations.setTextColor(ContextCompat.getColor(mContext,R.color.colorPaleGren));
+            holder.alert.setImageResource(R.drawable.ic_alert_icon_palegreen);
         }
         else if(Double.valueOf(holder.pollutionLevel.getText().toString()) > 600 && Double.valueOf(holder.pollutionLevel.getText().toString()) <= 900) {
-            holder.pollutionLevel.setTextColor(ContextCompat.getColor(mContext,R.color.colorYellow));
             holder.healthRecommendations.setText("May be unhealthy for sensitive groups");
-            holder.healthRecommendations.setTextColor(ContextCompat.getColor(mContext,R.color.colorYellow));
+            holder.alert.setImageResource(R.drawable.ic_alert_icon_yellow);
         }
         else if(Double.valueOf(holder.pollutionLevel.getText().toString()) > 900 && Double.valueOf(holder.pollutionLevel.getText().toString()) <= 1200) {
-            holder.pollutionLevel.setTextColor(ContextCompat.getColor(mContext,R.color.colorOrange));
             holder.healthRecommendations.setText("Unhealthy. Try to reduce you outdoor activities.");
-            holder.healthRecommendations.setTextColor(ContextCompat.getColor(mContext,R.color.colorOrange));
+            holder.alert.setImageResource(R.drawable.ic_alert_icon_orange);
         }
         else if(Double.valueOf(holder.pollutionLevel.getText().toString()) > 1200) {
-            holder.pollutionLevel.setTextColor(ContextCompat.getColor(mContext,R.color.colorRed));
             holder.healthRecommendations.setText("Health warnings of emergency conditions.");
-            holder.healthRecommendations.setTextColor(ContextCompat.getColor(mContext,R.color.colorRed));
+            holder.alert.setImageResource(R.drawable.ic_alert_icon_red);
         }
 
         //set the timestamp difference
@@ -137,61 +139,67 @@ public class LocationListAdapter extends ArrayAdapter<SensorPoint> {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                for (SensorPoint info : mSensorPointsList){
-                    TextView area = (TextView) v.findViewById(R.id.area);
+                if(chartSensorPopUp != null && chartSensorPopUp.isShowing()) {
+                    chartSensorPopUp.dismiss();
+                }
+                else{
+                    for (SensorPoint info : mSensorPointsList){
+                        TextView area = (TextView) v.findViewById(R.id.area);
 
-                    if(info.getArea().equals(area.getText().toString())){
+                        if(info.getArea().equals(area.getText().toString())){
 
-                        LayoutInflater inflater = (LayoutInflater) mContext.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
-                        View popupContent = inflater.inflate(R.layout.layout_chart, null);
-                        chartSensorPopUp = new PopupWindow();
+                            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+                            View popupContent = inflater.inflate(R.layout.layout_line_chart, null);
+                            chartSensorPopUp = new PopupWindow();
 
-                        //popup should wrap content view
-                        chartSensorPopUp.setWindowLayoutMode(
-                                ViewGroup.LayoutParams.WRAP_CONTENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT);
-                        chartSensorPopUp.setHeight(250);
-                        chartSensorPopUp.setWidth(350);
+                            //popup should wrap content view
+                            chartSensorPopUp.setWindowLayoutMode(
+                                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                            chartSensorPopUp.setHeight(250);
+                            chartSensorPopUp.setWidth(350);
 
-                        //set content and background
-                        chartSensorPopUp.setContentView(popupContent);
-                        chartSensorPopUp.setBackgroundDrawable(mContext.getResources().getDrawable(R.drawable.round_layout));
+                            //set content and background
+                            chartSensorPopUp.setContentView(popupContent);
+                            chartSensorPopUp.setBackgroundDrawable(mContext.getResources().getDrawable(R.drawable.round_layout));
 
-                        chartSensorPopUp.showAtLocation(popupContent, Gravity.CENTER,0,0);
+                            chartSensorPopUp.showAtLocation(popupContent, Gravity.CENTER,0,0);
 
-                        // in this example, a LineChart is initialized from xml
-                        BarChart chart = (BarChart) popupContent.findViewById(R.id.chart);
+                            // in this example, a LineChart is initialized from xml
+                            LineChart chart = (LineChart) popupContent.findViewById(R.id.lineChart);
 
-                        List<BarEntry> entries = new ArrayList<BarEntry>();
-                        ArrayList<String> labels = new ArrayList<String>();
-                        int index=-1;
-                        info.getPollutionLevels().sort(Comparator.comparing(PollutionLevel::getTime));
-                        for (PollutionLevel obj : info.getPollutionLevels()) {
-                            if (index<6) {
-                                index++;
-                                entries.add(new BarEntry(index, obj.getLevel().floatValue()));
-                                labels.add(obj.getTime());
+                            List<Entry> entries = new ArrayList<>();
+                            ArrayList<String> labels = new ArrayList<>();
+                            int index=-1;
+                            info.getPollutionLevels().sort(Comparator.comparing(PollutionLevel::getTime));
+                            for (PollutionLevel obj : info.getPollutionLevels()) {
+                                if (index<6) {
+                                    index++;
+                                    entries.add(new Entry(index, obj.getLevel().floatValue()));
+                                    labels.add(obj.getTime());
+                                }
                             }
+
+
+                            chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
+                            chart.getXAxis().setPosition(XAxis.XAxisPosition.TOP_INSIDE);
+                            chart.getAxisRight().setEnabled(false);
+                            chart.getXAxis().setTextSize(12f);
+                            chart.getXAxis().setGranularity(1f);
+                            chart.getXAxis().setGranularityEnabled(true);
+
+                            chart.setExtraBottomOffset(-70f);
+
+                            LineDataSet dataset = new LineDataSet(entries,"");
+                            chart.getDescription().setText("");
+
+                            //dataset.setDrawValues(false);
+
+                            LineData data = new LineData(dataset);
+                            chart.setData(data);
+                            dataset.setColors(ColorTemplate.COLORFUL_COLORS);
+                            chart.animateY(1000);
                         }
-
-                        chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
-                        chart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM_INSIDE);
-                        chart.getXAxis().setLabelRotationAngle(-90);
-                        chart.getAxisRight().setEnabled(false);
-                        chart.getXAxis().setTextSize(5f);
-                        chart.getXAxis().setGranularity(1f);
-                        chart.getXAxis().setGranularityEnabled(true);
-
-                        chart.setExtraBottomOffset(-70f);
-
-                        BarDataSet dataset = new BarDataSet(entries, "Legend Text here");
-
-                        dataset.setDrawValues(false);
-
-                        BarData data = new BarData(dataset);
-                        chart.setData(data);
-                        dataset.setColors(ColorTemplate.COLORFUL_COLORS);
-                        chart.animateY(1000);
                     }
                 }
             }

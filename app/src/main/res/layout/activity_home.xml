@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swiperefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,56 +13,108 @@
     tools:context=".HomeActivity"
     android:id="@+id/activity_home">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:background="@color/colorAppBar"
+        android:elevation="4dp"
+
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15sp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/areaTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="70dp"
-            android:gravity="center"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentTop="true"
-            android:text=""
-            android:textColor="#fa00acaf"
-            android:textSize="33sp"
-            android:textStyle="bold"
-            android:typeface="sans" />
+        android:orientation="vertical"
+        android:layout_marginBottom="50sp">
 
         <include layout="@layout/layout_rating"
-            android:layout_below="@+id/areaTextView"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="60sp"
             android:id="@+id/rating"
             android:layout_height="wrap_content"
-            android:layout_width="wrap_content" />
+            android:layout_width="wrap_content"
+            android:layout_gravity="bottom"/>
 
-        <Button
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="horizontal">
+
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Analysis"
-            android:onClick="showAnalysis"/>
+            android:src="@drawable/ic_bar_chart_icon"
+            android:background="@drawable/rounded_corners_white"
+            android:onClick="showAnalysis"
+            android:layout_gravity="start"
+            android:layout_marginStart="20sp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Best rated places for a good air quality."
+            android:gravity="center_vertical"
+            android:layout_marginStart="8sp"
+            android:layout_gravity="center"/>
+    </LinearLayout>
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="25sp">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Your current location:"
+                android:layout_marginStart="20dp"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:id="@+id/areaTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="40sp"
+                android:textStyle="bold"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:layout_gravity="center"/>
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nearby Air Monitor Stations:"
+            android:layout_marginStart="20sp"
+            android:layout_marginTop="20sp"
+            android:layout_marginBottom="8sp"
+            android:textSize="15sp"/>
 
         <ListView
             android:id="@+id/listView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/rating"
-            android:layout_marginBottom="60dp"
-            android:layout_marginTop="20dp"
             android:fadingEdge="none"
             android:divider="@null"
-            android:dividerHeight="0dp"/>
+            android:dividerHeight="0dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"/>
 
 
     </LinearLayout>
 
     <include layout="@layout/layout_bottom_navigation_view" />
 </android.support.design.widget.CoordinatorLayout>
+
+</android.support.v4.widget.SwipeRefreshLayout>

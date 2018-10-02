@@ -2,61 +2,110 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
+    android:layout_width="180dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:background="@drawable/bg_map_info">
+    android:id="@+id/layout_info_window"
+    android:background="@drawable/rounded_corners_white">
 
-    <RelativeLayout
-        android:layout_width="180dp"
-        android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="8sp"
+        android:layout_gravity="left"
+        android:layout_marginTop="3sp">
+
+        <ImageView
+            android:id="@+id/imageAlert"
+            android:layout_width="20sp"
+            android:layout_height="20sp"
+            android:src="@drawable/ic_alert_icon_red"/>
+
         <TextView
             android:id="@+id/indexInfoWindow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="GOOD"
-            android:gravity="right"/>
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:layout_marginStart="5sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="8sp"
+        android:layout_marginTop="2sp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Air Pollution Index:"
+            android:layout_marginEnd="5sp"
+            android:textColor="#000000"
+            android:textSize="14sp"/>
+
 
         <TextView
             android:id="@+id/pollutionLevelInfoWindow"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="402"/>
+            android:text="402"
+            android:textColor="#000000"
+            android:textSize="14sp"/>
 
-    </RelativeLayout>
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/areaInfoWindow"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#1976d2"
-        android:textSize="12sp"
-        android:text="Teatrul National Lucian Blaga"
-        android:singleLine="false"
-        app:layout_constraintTop_toBottomOf="@+id/recommendationsInfoWindow"/>
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8sp"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:text=""/>
+
+        <TextView
+            android:id="@+id/areaInfoWindow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:textSize="12sp"
+            android:text="Teatrul National Lucian"
+            android:singleLine="false"
+            app:layout_constraintTop_toBottomOf="@+id/recommendationsInfoWindow"/>
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/recommendationsInfoWindow"
-        android:layout_width="170dp"
+        android:layout_width="180dp"
         android:layout_height="wrap_content"
-        android:textColor="#c2185b"
+        android:textColor="#000000"
         android:textSize="12sp"
         android:text="JUST BREATH"
-        android:gravity="center"
+        android:layout_marginStart="8sp"
         app:layout_constraintTop_toBottomOf="@+id/indexInfoWindow"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6sp"
         android:gravity="end"
         android:text="12:53 today"
         android:id="@+id/timestampInfoWindow"
-        android:textColor="#1976d2"
+        android:textColor="#000000"
         android:textSize="10sp"
-        android:textStyle="bold"
         android:typeface="sans"
+        android:layout_marginEnd="5sp"
+        android:layout_marginBottom="5sp"
+        android:layout_marginTop="1sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/areaInfoWindow"/>

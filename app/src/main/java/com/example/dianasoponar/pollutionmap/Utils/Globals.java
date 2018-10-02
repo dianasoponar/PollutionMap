@@ -1,12 +1,14 @@
 package com.example.dianasoponar.pollutionmap.Utils;
 
 import android.location.Address;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import com.example.dianasoponar.pollutionmap.Models.PollutionLevel;
 import com.example.dianasoponar.pollutionmap.Models.RatingPoint;
 import com.example.dianasoponar.pollutionmap.Models.SensorPoint;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,12 +28,15 @@ public class Globals {
     public static List<SensorPoint> mSensorPointsList;
     public static List<RatingPoint> mRatingPointList;
     public static PopupWindow chartSensorPopUp;
+    public static List<SensorPoint> mSensorLocations;
+    public static ListView mListView;
+
 
     public static void getRatings() {
-        mRatingPointList = new ArrayList<>();
         mDatabaseRatings.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                mRatingPointList = new ArrayList<>();
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
@@ -64,6 +69,7 @@ public class Globals {
         mDatabaseSensors.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                mSensorPointsList = new ArrayList<>();
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {

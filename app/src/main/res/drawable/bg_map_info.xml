@@ -19,7 +19,7 @@
                 android:topLeftRadius="5dp"
                 android:topRightRadius="5dp" />
             <stroke android:width="5px"
-                android:color="#000000" />
+                android:color="#d0ffffff" />
 
         </shape>
     </item>

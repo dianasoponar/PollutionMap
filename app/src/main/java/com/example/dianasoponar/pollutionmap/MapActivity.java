@@ -10,14 +10,18 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,10 +33,20 @@ import android.widget.RatingBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
+import com.example.dianasoponar.pollutionmap.Models.PollutionLevel;
 import com.example.dianasoponar.pollutionmap.Models.RatingPoint;
 import com.example.dianasoponar.pollutionmap.Models.SensorPoint;
 import com.example.dianasoponar.pollutionmap.Utils.BottomNavigationViewHelper;
+import com.example.dianasoponar.pollutionmap.Utils.OnGeocoderFinishedListener;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -51,18 +65,21 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.google.maps.android.heatmaps.WeightedLatLng;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.example.dianasoponar.pollutionmap.Utils.Globals.*;
 
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
 
     private static final String TAG = "MapActivity";
     private static final int ACTIVITY_NUM = 1;
@@ -72,11 +89,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private ArrayList<WeightedLatLng> heatMapRedData;
     TileOverlay mOverlayGreen;
     TileOverlay mOverlayRed;
-    private Context mContext;
+    private static Context mContext;
     private PopupWindow popup;
     private LatLng popupLatLng;
-    private final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 200;
     private List<Marker> markerList;
+    public Marker mLastShownInfoWindowMarker;
+    boolean isMarkerOpen = false;
 
     //widgets
     private Switch heatmapSwitch;
@@ -131,7 +149,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         // For showing a move to my location button
-        if (checkPermissions()) {
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -143,15 +160,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 return;
             }
             googleMap.setMyLocationEnabled(true);
-        }
         mMap.setMyLocationEnabled(true);
 
-        // For dropping a marker at a point on the Map
-        LatLng cluj = new LatLng(46.7712101, 23.6236353);
-        //googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
+        LatLng currentLocation;
+
+        if (currentAddress!=null){
+            // For dropping a marker at a point on the Map
+            currentLocation = new LatLng(currentAddress.getLatitude(), currentAddress.getLongitude());
+        }
+        else{
+            currentLocation = new LatLng(46.7698435,23.5888696 );
+            Toast.makeText(this.getBaseContext(), "Failed to load location!", Toast.LENGTH_LONG).show();
+        }
 
         // For zooming automatically to the location of the marker
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(cluj).zoom(15).build();
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(currentLocation).zoom(15).build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
         //set onMapClick listener and add the popup
@@ -161,6 +184,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             public void onMapClick(LatLng point) {
                 if(popup != null && popup.isShowing()){
                     popup.dismiss();
+                } else if (chartSensorPopUp!=null && chartSensorPopUp.isShowing()){
+                    chartSensorPopUp.dismiss();
+                    mLastShownInfoWindowMarker.hideInfoWindow();
+                    isMarkerOpen = false;
+                } else if (mLastShownInfoWindowMarker != null && isMarkerOpen){
+                    mLastShownInfoWindowMarker.hideInfoWindow();
+                    isMarkerOpen = false;
                 } else{
                     View popupContent = getLayoutInflater().inflate(R.layout.layout_rating, null);
                     popup = new PopupWindow();
@@ -187,12 +217,24 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 @Override
                 public void onCameraChange(CameraPosition cameraPosition) {
                     for(Marker m:markerList){
-                        m.setVisible(cameraPosition.zoom>12);
+                        m.setVisible(cameraPosition.zoom>13);
                         //8 here is your zoom level, you can set it as your need.
                     }
                 }
             });
 
+        // override markerclicklistener to store lastShownInfoWindowMarker in
+        // the activity where back button will be used
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                mLastShownInfoWindowMarker = marker;
+                isMarkerOpen = true;
+                return false; // false keeps the standard behavior
+            }
+        });
+
+        mMap.setOnInfoWindowClickListener(this);
 
         setSensorMarkers();
         getRatingData();
@@ -226,8 +268,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         bm.setDensity(255);
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.WHITE);
-        paint.setTextSize(20);
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(16);
         paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         paint.setTextAlign(Paint.Align.CENTER);
         Canvas canvas = new Canvas(bm);
@@ -236,7 +278,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         canvas.drawText(text,bm.getWidth()/2 //x position
                 , bm.getHeight()/2  // y position
                 , paint);
-        return new BitmapDrawable(this.getResources(),getResizedBitmap(bm, 180, 180));
+        return new BitmapDrawable(this.getResources(),getResizedBitmap(bm, 180,160));
     }
 
     public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
@@ -270,6 +312,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             mMap.setInfoWindowAdapter(customInfoWindow);
 
             Marker m = mMap.addMarker(markerOptions);
+
             markerList.add(m);
             m.setTag(info);
         }
@@ -277,10 +320,27 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     private void getRatingData(){
         // Read from the database
-        Bitmap bm = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_star_icon_yellow).copy(Bitmap.Config.ARGB_8888, true), 150, 150, true);
 
         for (RatingPoint info : mRatingPointList){
             MarkerOptions markerOptions = new MarkerOptions();
+
+            Bitmap bm = null;
+
+            if(info.getRating() <= 1){
+                bm = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_star_icon_red).copy(Bitmap.Config.ARGB_8888, true), 200, 200, true);
+            }
+            else if(info.getRating() > 1 && info.getRating() <= 2) {
+                bm = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_star_icon_orange).copy(Bitmap.Config.ARGB_8888, true), 200, 200, true);
+            }
+            else if(info.getRating() > 2 && info.getRating() <= 3) {
+                bm = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_star_icon_yellow).copy(Bitmap.Config.ARGB_8888, true), 200, 200, true);
+            }
+            else if(info.getRating() > 3 && info.getRating() <= 4) {
+                bm = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_star_icon_palegreen).copy(Bitmap.Config.ARGB_8888, true), 200, 200, true);
+            }
+            else if(info.getRating() > 4) {
+                bm = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_marker_star_icon_green).copy(Bitmap.Config.ARGB_8888, true), 200, 200, true);
+            }
 
             markerOptions.position(new LatLng(info.getCoordinates().latitude, info.getCoordinates().longitude))
                     .title(info.getArea())
@@ -376,6 +436,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
      */
     public void rateMe(View view){
 
+
+        Geocoder geocoder;
+        List<Address> addresses = null;
+        geocoder = new Geocoder(this, Locale.getDefault());
+
+
+        try {
+            addresses = geocoder.getFromLocation(popupLatLng.latitude, popupLatLng.longitude, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Initialize RatingBar
         RatingBar ratingBar = (RatingBar) popup.getContentView().findViewById(R.id.ratingBar);
         Button submitRating = (Button) popup.getContentView().findViewById(R.id.submitRating);
@@ -390,7 +462,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         String newPostKey = newChildRef.getKey();
         // Create the data we want to update
         Map newPost = new HashMap();
-        newPost.put("area", currentAddress.getThoroughfare());
+        newPost.put("area", addresses.get(0).getThoroughfare());
 
         Map newPostCoordinates = new HashMap();
         newPostCoordinates.put("latitude", popupLatLng.latitude);
@@ -401,11 +473,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         newPostDateTime.put("day", calendar.get(Calendar.DAY_OF_MONTH));
         newPostDateTime.put("hour", calendar.get(Calendar.HOUR_OF_DAY));
         newPostDateTime.put("minute", calendar.get(Calendar.MINUTE));
-        newPostDateTime.put("month", calendar.get(Calendar.MONTH));
+        newPostDateTime.put("month", calendar.get(Calendar.MONTH)+1);
         newPostDateTime.put("year", calendar.get(Calendar.YEAR));
         newPost.put("dateTime", newPostDateTime);
 
-        newPost.put("rating", (double)ratingBar.getRating());
+        newPost.put("rating", Double.parseDouble(String.format("%.1f", ratingBar.getRating())));
 
         Map updatedUserData = new HashMap();
         updatedUserData.put(newPostKey, newPost);
@@ -416,30 +488,85 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 if (databaseError != null) {
                     System.out.println("Error updating data: " + databaseError.getMessage());
                 }
+                mMap.clear();
+                getRatingData();
+                getSensors();
+                if (heatmapSwitch.isActivated()){
+                    showHeatMap();
+                }
             }
         });
 
         ratingBar.setVisibility(View.INVISIBLE);
         submitRating.setVisibility(View.INVISIBLE);
         messageRating.setVisibility(View.VISIBLE);
-        messageRating.setText("Your rating is: "+ratingBar.getRating());
+        messageRating.setText("Your rating is: "+String.format("%.1f", ratingBar.getRating()));
 
         //Toast.makeText(getApplicationContext(), String.valueOf(ratingBar.getRating()), Toast.LENGTH_LONG).show();
     }
 
-    private boolean checkPermissions() {
-        if (ContextCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        } else {
-            requestPermissions();
-            return false;
-        }
-    }
+    @Override
+    public void onInfoWindowClick(Marker marker) {
 
-    private void requestPermissions() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        if (marker.getTag().getClass() == (new SensorPoint()).getClass()) {
+            for (SensorPoint info : mSensorPointsList) {
+
+                if (info.getArea().equals(((SensorPoint) marker.getTag()).getArea())) {
+
+                    LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View popupContent = inflater.inflate(R.layout.layout_line_chart, null);
+                    chartSensorPopUp = new PopupWindow();
+
+                    //popup should wrap content view
+                    chartSensorPopUp.setWindowLayoutMode(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT);
+                    chartSensorPopUp.setHeight(250);
+                    chartSensorPopUp.setWidth(350);
+
+                    //set content and background
+                    chartSensorPopUp.setContentView(popupContent);
+                    chartSensorPopUp.setBackgroundDrawable(mContext.getResources().getDrawable(R.drawable.round_layout));
+
+                    chartSensorPopUp.showAtLocation(popupContent, Gravity.CENTER, 0, 0);
+
+                    // in this example, a LineChart is initialized from xml
+                    LineChart chart = (LineChart) popupContent.findViewById(R.id.lineChart);
+
+                    List<Entry> entries = new ArrayList<Entry>();
+                    ArrayList<String> labels = new ArrayList<String>();
+                    int index = -1;
+                    info.getPollutionLevels().sort(Comparator.comparing(PollutionLevel::getTime));
+                    for (PollutionLevel obj : info.getPollutionLevels()) {
+                        if (index < 6) {
+                            index++;
+                            entries.add(new Entry(index, obj.getLevel().floatValue()));
+                            labels.add(obj.getTime());
+                        }
+                    }
+
+
+                    chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
+                    chart.getXAxis().setPosition(XAxis.XAxisPosition.TOP_INSIDE);
+                    chart.getAxisRight().setEnabled(false);
+                    chart.getXAxis().setTextSize(12f);
+                    chart.getXAxis().setGranularity(1f);
+                    chart.getXAxis().setGranularityEnabled(true);
+
+                    chart.setExtraBottomOffset(-70f);
+
+                    LineDataSet dataset = new LineDataSet(entries, "");
+
+                    //dataset.setDrawValues(false);
+
+                    LineData data = new LineData(dataset);
+                    chart.setData(data);
+                    chart.getDescription().setText("");
+                    dataset.setColors(ColorTemplate.COLORFUL_COLORS);
+                    chart.animateY(1000);
+                }
+            }
+        }
+
     }
 }

@@ -3,14 +3,18 @@ package com.example.dianasoponar.pollutionmap;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -22,6 +26,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.dianasoponar.pollutionmap.Models.RatingPoint;
 import com.example.dianasoponar.pollutionmap.Models.SensorPoint;
@@ -60,8 +65,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-
 import static com.example.dianasoponar.pollutionmap.Utils.Globals.*;
+
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -70,38 +75,38 @@ public class HomeActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationClient;
 
     //Variables
-    private List<SensorPoint> mSensorLocations;
     private static final int ACTIVITY_NUM = 0;
 
     //Widgets
     private static Context mContext;
-    private ListView mListView;
     private RatingBar ratingBar;
     private Button submitRating;
     private TextView messageRating;
     private PopupWindow chartPopUp;
+    private TextView areaTextView;
+    private SwipeRefreshLayout mySwipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar.setTitle("Air Monitor");
+        setSupportActionBar(myToolbar);
+
         mContext = HomeActivity.this;
-        mRatingPointList = new ArrayList<>();
-        mSensorPointsList = new ArrayList<>();
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(mContext);
 
         mListView = (ListView) findViewById(R.id.listView);
-        mSensorLocations = new ArrayList<>();
+
         // Initialize RatingBar
         ratingBar = (RatingBar) findViewById(R.id.ratingBar);
         submitRating = (Button) findViewById(R.id.submitRating);
         messageRating = (TextView) findViewById(R.id.messageRating);
-        //setup widgets
-        LocationListAdapter adapter = new LocationListAdapter(mContext,
-                R.layout.layout_location, mSensorLocations);
-        mListView.setAdapter(adapter);
+        areaTextView = (TextView) findViewById(R.id.areaTextView);
+        mySwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
 
         findViewById(R.id.activity_home).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,15 +120,66 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         });
-
         setupBottomNavigationView();
-        initFirebase();
         getLocation();
+
+        /*
+         * Sets up a SwipeRefreshLayout.OnRefreshListener that is invoked when the user
+         * performs a swipe-to-refresh gesture.
+         */
+        mySwipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+
+                        // This method performs the actual data-refresh operation.
+                        // The method calls setRefreshing(false) when it's finished.
+                        myUpdateOperation();
+                        mySwipeRefreshLayout.setRefreshing(false);
+                    }
+                }
+        );
+
+        if (currentAddress!=null){
+            areaTextView.setText(currentAddress.getThoroughfare());
+            areaTextView.setTextSize(30);
+            areaTextView.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
+            areaTextView.setTextColor(Color.BLACK);
+
+            mSensorLocations = new ArrayList<>();
+            setSensorData();
+        }
+        else{
+
+            Toast.makeText(this.getBaseContext(), "Failed to load location!", Toast.LENGTH_LONG).show();
+        }
+
+        //setup widgets
+        LocationListAdapter adapter = new LocationListAdapter(mContext,
+                R.layout.layout_location, mSensorLocations);
+        mListView.setAdapter(adapter);
+
+    }
+
+    private void myUpdateOperation(){
+        getLocation();
+
+        if (currentAddress!=null){
+            areaTextView.setText(currentAddress.getThoroughfare());
+            areaTextView.setTextSize(30);
+            areaTextView.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
+            areaTextView.setTextColor(Color.BLACK);
+
+            mSensorLocations = new ArrayList<>();
+            setSensorData();
+        }
+        else{
+            Toast.makeText(this.getBaseContext(), "Failed to load location!", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void getLocation() {
-        final TextView areaTextView = (TextView) findViewById(R.id.areaTextView);
-
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -145,13 +201,6 @@ public class HomeActivity extends AppCompatActivity {
                                 @Override
                                 public void onFinished(final List<Address> results) {
                                     currentAddress = results.get(0);
-                                    areaTextView.setText(currentAddress.getThoroughfare());
-
-                                    areaTextView.setTextSize(30);
-                                    areaTextView.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
-                                    areaTextView.setTextColor(Color.BLACK);
-
-                                    setSensorData();
                                 }
                             });
                         }
@@ -189,50 +238,53 @@ public class HomeActivity extends AppCompatActivity {
      * @param view
      */
     public void rateMe(View view){
-        Date date = new Date();   // given date
-        Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
-        calendar.setTime(date);   // assigns calendar to given date
+        if (currentAddress==null) {
+            Toast.makeText(mContext, "Rating failed! Location unavailable", Toast.LENGTH_LONG).show();
+        }
+        else{
+            Date date = new Date();   // given date
+            Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
+            calendar.setTime(date);   // assigns calendar to given date
 
-        DatabaseReference newChildRef = mDatabaseRatings.push();
+            DatabaseReference newChildRef = mDatabaseRatings.push();
 
-        String newPostKey = newChildRef.getKey();
-        // Create the data we want to update
-        Map newPost = new HashMap();
-        newPost.put("area", currentAddress.getThoroughfare());
+            String newPostKey = newChildRef.getKey();
+            // Create the data we want to update
+            Map newPost = new HashMap();
+            newPost.put("area", currentAddress.getThoroughfare());
 
-        Map newPostCoordinates = new HashMap();
-        newPostCoordinates.put("latitude", currentAddress.getLatitude());
-        newPostCoordinates.put("longitude", currentAddress.getLongitude());
-        newPost.put("coordinates", newPostCoordinates);
+            Map newPostCoordinates = new HashMap();
+            newPostCoordinates.put("latitude", currentAddress.getLatitude());
+            newPostCoordinates.put("longitude", currentAddress.getLongitude());
+            newPost.put("coordinates", newPostCoordinates);
 
-        Map newPostDateTime = new HashMap();
-        newPostDateTime.put("day", calendar.get(Calendar.DAY_OF_MONTH));
-        newPostDateTime.put("hour", calendar.get(Calendar.HOUR_OF_DAY));
-        newPostDateTime.put("minute", calendar.get(Calendar.MINUTE));
-        newPostDateTime.put("month", calendar.get(Calendar.MONTH));
-        newPostDateTime.put("year", calendar.get(Calendar.YEAR));
-        newPost.put("dateTime", newPostDateTime);
+            Map newPostDateTime = new HashMap();
+            newPostDateTime.put("day", calendar.get(Calendar.DAY_OF_MONTH));
+            newPostDateTime.put("hour", calendar.get(Calendar.HOUR_OF_DAY));
+            newPostDateTime.put("minute", calendar.get(Calendar.MINUTE));
+            newPostDateTime.put("month", calendar.get(Calendar.MONTH)+1);
+            newPostDateTime.put("year", calendar.get(Calendar.YEAR));
+            newPost.put("dateTime", newPostDateTime);
 
-        newPost.put("rating", (double)ratingBar.getRating());
+            newPost.put("rating", Double.parseDouble(String.format("%.1f", ratingBar.getRating())));
 
-        Map updatedUserData = new HashMap();
-        updatedUserData.put(newPostKey, newPost);
-        // Do a deep-path update
-        mDatabaseRatings.updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                if (databaseError != null) {
-                    System.out.println("Error updating data: " + databaseError.getMessage());
+            Map updatedUserData = new HashMap();
+            updatedUserData.put(newPostKey, newPost);
+            // Do a deep-path update
+            mDatabaseRatings.updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError != null) {
+                        System.out.println("Error updating data: " + databaseError.getMessage());
+                    }
                 }
-            }
-        });
+            });
 
-        ratingBar.setVisibility(View.INVISIBLE);
-        submitRating.setVisibility(View.INVISIBLE);
-        messageRating.setVisibility(View.VISIBLE);
-        messageRating.setText("Your rating is: "+ratingBar.getRating());
-
-        //Toast.makeText(getApplicationContext(), String.valueOf(ratingBar.getRating()), Toast.LENGTH_LONG).show();
+            ratingBar.setVisibility(View.INVISIBLE);
+            submitRating.setVisibility(View.INVISIBLE);
+            messageRating.setVisibility(View.VISIBLE);
+            messageRating.setText("Your rating is: "+String.format("%.1f", ratingBar.getRating()));
+        }
     }
 
     public void showAnalysis(View view){
@@ -272,38 +324,21 @@ public class HomeActivity extends AppCompatActivity {
         chart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM_INSIDE);
         chart.getXAxis().setLabelRotationAngle(-90);
         chart.getAxisRight().setEnabled(false);
-        chart.getXAxis().setTextSize(5f);
+        chart.getXAxis().setTextSize(12f);
         chart.getXAxis().setGranularity(1f);
         chart.getXAxis().setGranularityEnabled(true);
 
-        chart.setExtraBottomOffset(-70f);
+        chart.setExtraBottomOffset(-90f);
 
-        BarDataSet dataset = new BarDataSet(entries, "Legend Text here");
+        BarDataSet dataset = new BarDataSet(entries, "");
 
         dataset.setDrawValues(false);
 
         BarData data = new BarData(dataset);
         chart.setData(data);
+        chart.getDescription().setText("");
         dataset.setColors(ColorTemplate.COLORFUL_COLORS);
         chart.animateY(1000);
-    }
-
-    public void initFirebase(){
-        //enable disk persistence
-        if (FirebaseApp.getApps(HomeActivity.this).isEmpty()) {
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-        }
-
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mDatabaseSensors = mFirebaseDatabase.getReference("sensors");
-        mDatabaseRatings = mFirebaseDatabase.getReference("ratings");
-
-        //The Firebase Realtime Database synchronizes and stores a local copy of the data for active listeners
-        mDatabaseSensors.keepSynced(true);
-        mDatabaseRatings.keepSynced(true);
-
-        getRatings();
-        getSensors();
     }
 
     public static void getAddress(final Location location, final OnGeocoderFinishedListener listener) {

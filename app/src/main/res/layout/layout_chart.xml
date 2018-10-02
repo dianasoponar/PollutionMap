@@ -8,6 +8,6 @@
         android:id="@+id/chart"
         android:layout_width="350dp"
         android:layout_height="300dp"
-        android:background="#867b7b7b"/>
+        android:background="#c86c6c6c"/>
 
 </android.support.constraint.ConstraintLayout>

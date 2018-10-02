@@ -18,12 +18,34 @@
                                 <PersistentState>
                                   <option name="children">
                                     <map>
+                                      <entry key="clipArt">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="trimmed" value="true" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
                                       <entry key="clipartAsset">
                                         <value>
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/toggle/ic_star_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/editor/ic_insert_chart_black_24dp.xml" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
+                                      <entry key="image">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="trimmed" value="true" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -34,9 +56,9 @@
                                   <option name="values">
                                     <map>
                                       <entry key="imageAsset" value="E:\Faculty\Licenta\marker-star.png" />
-                                      <entry key="outputName" value="ic_marker_star_icon_yellow" />
+                                      <entry key="outputName" value="ic_bar_chart_icon" />
                                       <entry key="theme" value="CUSTOM" />
-                                      <entry key="themeColor" value="ffed00" />
+                                      <entry key="themeColor" value="68b3af" />
                                     </map>
                                   </option>
                                 </PersistentState>
